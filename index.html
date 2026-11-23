@@ -64,6 +64,31 @@ document.getElementById('result').textContent='$0';
 }
   function mostrarEstado() {
   alert("PUDOSKY TRADING: Simulador DEMO activo");
+} 
+</script> <div class="card">
+  <h3>Activo de prueba</h3>
+
+  <label for="activoDemo">Elige un activo:</label>
+
+  <select id="activoDemo"
+    onchange="seleccionarActivo(this.value)"
+    style="width:100%;padding:12px;font-size:16px;margin-top:10px">
+    <option value="">Selecciona una opción</option>
+    <option value="EUR/USD">EUR/USD</option>
+    <option value="GBP/USD">GBP/USD</option>
+    <option value="USD/JPY">USD/JPY</option>
+  </select>
+
+  <p id="activoDemoEstado">Ningún activo seleccionado.</p>
+  <small>Ejemplos de prueba. Sin conexión a IQ Option.</small>
+</div>
+
+<script>
+function seleccionarActivo(activo) {
+  document.getElementById("activoDemoEstado").textContent =
+    activo
+      ? "Activo elegido: " + activo + " · DEMO"
+      : "Ningún activo seleccionado.";
 }
 </script>
 </body>
