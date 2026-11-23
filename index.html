@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PUDOSKY TRADING</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101827;color:white;font-family:Arial,sans-serif;padding:20px}
+header{text-align:center;padding:22px 0}
+h1{color:#39d98a;letter-spacing:2px}
+.card{background:#1d2a3d;padding:20px;border-radius:15px;margin:15px 0}
+button{border:0;padding:14px;border-radius:9px;font-weight:bold;width:100%;margin:6px 0}
+.call{background:#20b879;color:white}
+.put{background:#e64e61;color:white}
+.wait{background:#52647a;color:white}
+small{color:#aab8c9}
+.value{font-size:25px;font-weight:bold}
+</style>
+</head>
+<body>
+<header>
+<h1>PUDOSKY</h1>
+<p>TRADING INTELIGENTE</p>
+<small>Panel de análisis y simulación</small>
+</header>
+
+<div class="card">
+<h3>Estado del sistema</h3>
+<p id="status">Modo DEMO · Sin conexión al mercado</p>
+</div>
+
+<div class="card">
+<h3>Señal de operación</h3>
+<div class="value" id="signal">ESPERAR</div>
+<p id="reason">No hay datos reales de mercado conectados.</p>
+<button class="wait" onclick="alert('No hay datos de mercado. No se ejecutó ninguna operación.')">Consultar señal</button>
+</div>
+
+<div class="card">
+<h3>Indicadores</h3>
+<p>RSI: <span>Sin datos</span></p>
+<p>MACD: <span>Sin datos</span></p>
+<p>EMA: <span>Sin datos</span></p>
+</div>
+
+<div class="card">
+<h3>Simulador</h3>
+<p>Operaciones simuladas: <b id="total">0</b></p>
+<p>Resultado: <b id="result">$0</b></p>
+<button class="call" onclick="simulate()">Registrar prueba simulada</button>
+<small>Las pruebas no representan operaciones reales ni señales ganadoras.</small>
+</div>
+
+<script>
+let total=0;
+function simulate(){
+total++;
+document.getElementById('total').textContent=total;
+document.getElementById('result').textContent='$0';
+}
+</script>
+</body>
+</html>
