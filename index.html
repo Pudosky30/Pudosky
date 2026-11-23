@@ -1,95 +1,731 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PUDOSKY TRADING</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;background:#101827;color:white;font-family:Arial,sans-serif;padding:20px}
-header{text-align:center;padding:22px 0}
-h1{color:#39d98a;letter-spacing:2px}
-.card{background:#1d2a3d;padding:20px;border-radius:15px;margin:15px 0}
-button{border:0;padding:14px;border-radius:9px;font-weight:bold;width:100%;margin:6px 0}
-.call{background:#20b879;color:white}
-.put{background:#e64e61;color:white}
-.wait{background:#52647a;color:white}
-small{color:#aab8c9}
-.value{font-size:25px;font-weight:bold}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <title>PUDOSKY TRADING · Laboratorio DEMO</title>
+  <style>
+    :root{color-scheme:dark;--bg:#101827;--panel:#1d2a3d;--edge:#35445b;--text:#f4f7fc;--muted:#b7c4d8;--green:#39d98a;--gold:#ffd687}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+    main{max-width:960px;margin:auto;padding:24px 18px 56px}
+    header{padding:12px 0 24px}h1{font-size:29px;letter-spacing:2px;color:var(--green);margin:0}h2{font-size:21px;margin:0 0 14px}h3{font-size:17px;margin:0 0 10px}
+    p{margin:8px 0 14px}.muted,small{color:var(--muted)}small{font-size:14px}.eyebrow{font-size:12px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
+    .card{padding:22px;background:var(--panel);border:1px solid var(--edge);border-radius:18px;margin-bottom:18px}
+    .notice{padding:14px 16px;border:1px solid #856936;background:#352c1c;border-radius:12px;color:#ffe5b4}
+    .badge{display:inline-block;padding:5px 10px;border-radius:30px;border:1px solid var(--edge);font-size:12px;font-weight:700;margin:0 5px 7px 0}
+    .gold{color:var(--gold);border-color:#856936;background:#352c1c}.green{color:var(--green);border-color:#337b60}
+    .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.row.tight>*{flex:0 1 auto}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.metric{padding:15px;background:var(--bg);border:1px solid var(--edge);border-radius:12px}.metric span{color:var(--muted);font-size:13px;display:block}.metric strong{font-size:25px;font-variant-numeric:tabular-nums;display:block;overflow-wrap:anywhere}
+    button,input,select,textarea{font:inherit}button{min-height:48px;width:100%;border:1px solid transparent;border-radius:11px;padding:12px 14px;font-weight:700;cursor:pointer;background:var(--green);color:#0b2018}
+    button.secondary{background:transparent;border-color:#64748b;color:var(--text)}button.subtle{background:#35445b;color:var(--text)}button:disabled{opacity:.55;cursor:wait}
+    input,select,textarea{display:block;width:100%;border:1px solid #61718b;background:#101827;color:var(--text);border-radius:9px;padding:12px;margin:7px 0 15px;min-height:46px;font-size:16px}
+    textarea{min-height:190px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;line-height:1.5}
+    input[type=file]{font-size:14px;padding:10px}label{display:block;font-size:14px;font-weight:600}label small{font-weight:400}
+    :focus-visible{outline:3px solid var(--green);outline-offset:3px}
+    [hidden]{display:none!important}.message{padding:10px 0;margin:0;color:var(--muted);overflow-wrap:anywhere}.message.error{color:#ffb5bb}.message.success{color:var(--green)}
+    .resultmeta{font-size:14px;overflow-wrap:anywhere}.resultmeta strong{color:var(--text)}.caption{font-size:13px;color:var(--muted)}
+    .plot{width:100%;height:auto;display:block;background:var(--bg);border-radius:10px;margin-top:12px}
+    .history{list-style:none;margin:0;padding:0}.history li{padding:14px 0;border-bottom:1px solid var(--edge)}.history li:last-child{border-bottom:0}.history p{font-size:14px;margin:4px 0}
+    details{margin-top:16px}summary{cursor:pointer;min-height:44px;display:list-item;padding:8px 0;font-weight:600}code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#d6ebff;font-size:.9em}pre{overflow:auto;background:var(--bg);padding:12px;border-radius:9px}
+    .mini{font-size:14px}.divider{height:1px;background:var(--edge);margin:20px 0}.resultheader{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    a{color:#a1d2ff;text-underline-offset:3px}footer{color:var(--muted);font-size:13px;padding:8px 4px}
+    @media(min-width:740px){main{padding:32px 24px 64px}.metricgrid{grid-template-columns:repeat(3,minmax(0,1fr))}.card{padding:26px}.twocol{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;align-items:start}.twocol .card{margin:0}}
+    @media(max-width:370px){main{padding-inline:12px}.card{padding:16px}.row{flex-direction:column;align-items:stretch}.metric strong{font-size:21px}h1{font-size:25px}}
+  </style>
 </head>
 <body>
-<header>
-<h1>PUDOSKY</h1>
-<p>TRADING INTELIGENTE</p>
-<small>Panel de análisis y simulación</small>
-</header>
+<main>
+  <header>
+    <div class="eyebrow">PUDOSKY · VERSIÓN 2</div>
+    <h1>PUDOSKY TRADING</h1>
+    <p class="muted">Laboratorio de indicadores desde tu iPhone</p>
+    <span class="badge gold">DEMO · SIN CONEXIÓN AL MERCADO</span>
+    <span class="badge">Sin ejecución de operaciones</span>
+  </header>
 
-<div class="card">
-<h3>Estado del sistema</h3>
-<p id="status">Modo DEMO · Sin conexión al mercado</p>
-</div>
+  <section class="card" aria-labelledby="systemHeading">
+    <h2 id="systemHeading">Estado del sistema</h2>
+    <p id="status">Calcula indicadores con una serie de precios que cargues.</p>
+    <div class="notice"><strong>Señal operativa: <span id="signal">ESPERAR</span></strong><br><span id="reason">No hay datos en vivo ni una estrategia evaluada para generar señales.</span></div>
+    <p class="mini muted" style="margin-top:14px">Este panel no se conecta a tu cuenta de IQ Option. El ejemplo incorporado utiliza precios ficticios.</p>
+  </section>
 
-<div class="card">
-<h3>Señal de operación</h3>
-<div class="value" id="signal">ESPERAR</div>
-<p id="reason">No hay datos reales de mercado conectados.</p>
-<button class="wait" onclick="alert('No hay datos de mercado. No se ejecutó ninguna operación.')">Consultar señal</button>
-</div>
+  <section class="card" aria-labelledby="dataHeading">
+    <div class="eyebrow">PASO 1</div>
+    <h2 id="dataHeading">Carga una serie de precios</h2>
+    <p class="muted">Puedes probar el cálculo con un ejemplo o cargar tus propios cierres históricos.</p>
+    <div class="row">
+      <button id="exampleButton" type="button">Probar con datos ficticios</button>
+      <button id="userButton" class="secondary" type="button">Preparar mis propios datos</button>
+    </div>
+    <p id="inputOrigin" class="message" role="status">Aún no hay precios cargados.</p>
 
-<div class="card">
-<h3>Indicadores</h3>
-<p>RSI: <span>Sin datos</span></p>
-<p>MACD: <span>Sin datos</span></p>
-<p>EMA: <span>Sin datos</span></p>
-</div>
+    <details id="inputDetails">
+      <summary>Ver o introducir los precios</summary>
+      <p class="mini muted">Usa cierres de un mismo activo y una misma temporalidad, ordenados del más antiguo al más reciente. El cálculo completo requiere entre 34 y 5.000 cierres.</p>
+      <div class="grid">
+        <div>
+          <label for="activoDemo">Activo que identificas en tus datos</label>
+          <select id="activoDemo">
+            <option value="">Selecciona un activo</option>
+            <option value="EUR/USD">EUR/USD · etiqueta manual</option>
+            <option value="GBP/USD">GBP/USD · etiqueta manual</option>
+            <option value="USD/JPY">USD/JPY · etiqueta manual</option>
+            <option value="OTRO">Otro símbolo</option>
+          </select>
+        </div>
+        <div>
+          <label for="interval">Temporalidad declarada</label>
+          <select id="interval">
+            <option value="">No especificada</option>
+            <option>1 minuto</option><option>5 minutos</option><option>15 minutos</option>
+            <option>1 hora</option><option>1 día</option><option>Otra</option>
+          </select>
+        </div>
+      </div>
+      <div id="customAssetBox" hidden><label for="customAsset">Símbolo</label><input id="customAsset" maxlength="60" placeholder="Nombre que aparece en tu archivo"></div>
+      <p id="activoDemoEstado" class="caption">Ningún activo seleccionado. Esta lista no consulta el catálogo de IQ Option.</p>
+      <label for="source">Fuente declarada <small>(opcional; el panel no la verifica)</small></label>
+      <input id="source" maxlength="180" placeholder="Ejemplo: nombre del proveedor de tus datos">
 
-<div class="card">
-<h3>Simulador</h3>
-<p>Operaciones simuladas: <b id="total">0</b></p>
-<p>Resultado: <b id="result">$0</b></p>
-<button class="call" onclick="simulate()">Registrar prueba simulada</button>
-<small>Las pruebas no representan operaciones reales ni señales ganadoras.</small>
-</div>
-<button onclick="mostrarEstado()">
-  Ver estado del bot
-</button>
+      <label for="fileInput">Importar un archivo CSV o TXT</label>
+      <input id="fileInput" type="file" accept=".csv,.txt,text/csv,text/plain">
+      <p class="caption">También puedes pegar los cierres abajo. Usa punto decimal, por ejemplo <code>1.08520</code>.</p>
+      <label for="prices">Precios de cierre</label>
+      <textarea id="prices" maxlength="500000" spellcheck="false" autocorrect="off" autocapitalize="off" placeholder="Un cierre por línea, o CSV con una columna close o cierre."></textarea>
+      <details>
+        <summary>Formato del archivo</summary>
+        <p class="mini">Una lista de precios, uno por línea, o un CSV con cabecera <code>close</code> / <code>cierre</code>. Los separadores admitidos en CSV son coma o punto y coma. El separador decimal siempre es un punto.</p>
+        <pre><code>timestamp,close
+2026-01-05T12:00:00Z,1.08520
+2026-01-05T12:01:00Z,1.08535</code></pre>
+        <p class="caption">Estas dos filas solo ilustran el formato; no son datos de mercado. Necesitas al menos 34 cierres. Si incluyes fechas, usa ISO con zona horaria, una fecha diaria YYYY-MM-DD o una marca Unix en segundos/milisegundos. El panel rechaza fechas repetidas o fuera de orden.</p>
+      </details>
+    </details>
+    <button id="calculateButton" type="button" style="margin-top:16px">Calcular indicadores</button>
+    <p id="feedback" class="message" role="status" aria-live="polite">Pulsa «Probar con datos ficticios» para comprobar el motor.</p>
+  </section>
+
+  <section class="card" aria-labelledby="indicatorsHeading">
+    <div class="eyebrow">PASO 2</div>
+    <div class="resultheader"><h2 id="indicatorsHeading">Indicadores calculados</h2><span id="resultOrigin" class="badge">SIN DATOS</span></div>
+    <p id="resultMeta" class="resultmeta muted">Aquí aparecerán la fuente, el activo declarado y el número de cierres utilizados.</p>
+    <div class="grid metricgrid">
+      <div class="metric"><span>RSI · 14 · Wilder</span><strong id="rsiValue">—</strong></div>
+      <div class="metric"><span>EMA · 9</span><strong id="ema9Value">—</strong></div>
+      <div class="metric"><span>EMA · 21</span><strong id="ema21Value">—</strong></div>
+      <div class="metric"><span>MACD · 12, 26</span><strong id="macdValue">—</strong></div>
+      <div class="metric"><span>Línea de señal MACD · 9</span><strong id="signalValue">—</strong></div>
+      <div class="metric"><span>Histograma MACD</span><strong id="histogramValue">—</strong></div>
+    </div>
+    <div id="seriesBox" hidden>
+      <div class="divider"></div>
+      <h3>Serie que se ha calculado</h3>
+      <p id="seriesInfo" class="mini muted"></p>
+      <svg id="pricePlot" class="plot" viewBox="0 0 640 190" role="img" aria-labelledby="plotTitle plotDesc">
+        <title id="plotTitle">Serie de precios de cierre</title>
+        <desc id="plotDesc">El eje horizontal representa el orden de las observaciones, no su duración temporal.</desc>
+        <path d="M18 170H622" stroke="#35445b" fill="none"></path>
+        <polyline id="priceLine" fill="none" stroke="#39d98a" stroke-width="2.5" vector-effect="non-scaling-stroke"></polyline>
+      </svg>
+      <p class="caption">De izquierda a derecha: observaciones del más antiguo al más reciente. Escala vertical adaptada al mínimo y máximo de esta serie.</p>
+    </div>
+    <details>
+      <summary>Cómo se calculan</summary>
+      <p class="mini">Las EMA empiezan con la media simple de su período y continúan con un peso de 2 / (período + 1). El RSI utiliza 14 cambios y el suavizado de Wilder; una serie completamente plana devuelve 50 por convención de este panel.</p>
+      <p class="mini">MACD = EMA(12) − EMA(26). Su línea de señal es la EMA(9) del MACD. Histograma = MACD − línea de señal. Con estas semillas hacen falta 34 cierres para disponer de todos los valores.</p>
+      <p class="mini muted">La «línea de señal MACD» es parte del indicador, no una orden de compra o venta. Las semillas y datos de otro proveedor pueden producir valores distintos. Los cálculos no miden rentabilidad ni porcentaje de aciertos.</p>
+      <p class="mini"><a href="https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/rsi" target="_blank" rel="noopener noreferrer">Referencia RSI</a> · <a href="https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/macd" target="_blank" rel="noopener noreferrer">Referencia MACD</a></p>
+    </details>
+  </section>
+
+  <section class="card" aria-labelledby="historyHeading">
+    <h2 id="historyHeading">Historial de cálculos</h2>
+    <p class="mini muted">Registra análisis, no operaciones. Se conservan hasta 10 resultados en este navegador cuando el almacenamiento local está disponible.</p>
+    <p id="storageStatus" class="caption"></p>
+    <ul id="history" class="history"></ul>
+    <button id="clearHistory" type="button" class="secondary" style="margin-top:14px">Borrar historial de cálculos</button>
+  </section>
+
+  <details class="card">
+    <summary>Prueba de los controles del panel</summary>
+    <p class="mini muted">Este contador comprueba el botón. No representa una operación simulada en el mercado.</p>
+    <p>Pruebas del botón: <strong id="total">0</strong></p>
+    <button id="testButton" type="button" class="subtle">Registrar prueba de interfaz</button>
+    <button id="stateButton" type="button" class="secondary" style="margin-top:10px">Ver estado del panel</button>
+  </details>
+  <footer>Versión 2 · Los precios se procesan en tu navegador. Este archivo no solicita credenciales de IQ Option ni envía órdenes. El ejemplo ficticio solo permite comprobar los cálculos.</footer>
+</main>
+<noscript><p>Activa JavaScript en tu navegador para utilizar el calculador.</p></noscript>
 <script>
-let total=0;
-function simulate(){
-total++;
-document.getElementById('total').textContent=total;
-document.getElementById('result').textContent='$0';
-}
-  function mostrarEstado() {
-  alert("PUDOSKY TRADING: Simulador DEMO activo");
-} 
-</script> <div class="card">
-  <h3>Activo de prueba</h3>
+(function (root) {
+  "use strict";
 
-  <label for="activoDemo">Elige un activo:</label>
+  const MAX_ROWS = 5000;
+  const MIN_ANALYSIS_ROWS = 34;
+  const DECIMAL = /^(?:\d+(?:\.\d*)?|\.\d+)$/;
+  const CLOSE_HEADERS = new Set(["close", "cierre"]);
+  const TIME_HEADERS = new Set(["time", "timestamp", "date", "fecha"]);
 
-  <select id="activoDemo"
-    onchange="seleccionarActivo(this.value)"
-    style="width:100%;padding:12px;font-size:16px;margin-top:10px">
-    <option value="">Selecciona una opción</option>
-    <option value="EUR/USD">EUR/USD</option>
-    <option value="GBP/USD">GBP/USD</option>
-    <option value="USD/JPY">USD/JPY</option>
-  </select>
+  function validatePeriod(period) {
+    if (!Number.isInteger(period) || period < 1 || period > MAX_ROWS) {
+      throw new Error("El período debe ser un entero entre 1 y 5000.");
+    }
+  }
 
-  <p id="activoDemoEstado">Ningún activo seleccionado.</p>
-  <small>Ejemplos de prueba. Sin conexión a IQ Option.</small>
-</div>
+  function validateValues(values, positive) {
+    if (!Array.isArray(values)) {
+      throw new Error("Los precios deben estar en una lista.");
+    }
+    if (values.length > MAX_ROWS) {
+      throw new Error("Se admiten como máximo 5000 precios.");
+    }
+    for (let i = 0; i < values.length; i += 1) {
+      if (typeof values[i] !== "number" || !Number.isFinite(values[i]) ||
+          (positive && values[i] <= 0)) {
+        throw new Error("El valor " + (i + 1) + " debe ser un número " +
+          (positive ? "positivo y finito." : "finito."));
+      }
+    }
+  }
 
+  function finiteResult(value) {
+    if (!Number.isFinite(value)) {
+      throw new Error("Los precios exceden el rango numérico que se puede calcular.");
+    }
+    return value;
+  }
+
+  // Weighted updates avoid overflowing a naive sum while taking a mean.
+  function meanOf(values, start, count) {
+    let mean = 0;
+    for (let i = 0; i < count; i += 1) {
+      mean = finiteResult(mean * (i / (i + 1)) + values[start + i] / (i + 1));
+    }
+    return mean;
+  }
+
+  function emaUnchecked(values, period) {
+    const result = new Array(values.length).fill(null);
+    if (values.length < period) return result;
+    let previous = meanOf(values, 0, period);
+    result[period - 1] = previous;
+    const alpha = 2 / (period + 1);
+    for (let i = period; i < values.length; i += 1) {
+      previous = finiteResult(alpha * values[i] + (1 - alpha) * previous);
+      result[i] = previous;
+    }
+    return result;
+  }
+
+  // Public EMA also accepts finite negative values, for indicator series.
+  function emaSeries(values, period) {
+    validatePeriod(period);
+    validateValues(values, false);
+    return emaUnchecked(values, period);
+  }
+
+  function rsi(values, period = 14) {
+    validatePeriod(period);
+    validateValues(values, true);
+    if (values.length <= period) return null;
+    let gain = 0;
+    let loss = 0;
+    for (let i = 1; i <= period; i += 1) {
+      const delta = values[i] - values[i - 1];
+      gain = finiteResult(gain * ((i - 1) / i) + Math.max(delta, 0) / i);
+      loss = finiteResult(loss * ((i - 1) / i) + Math.max(-delta, 0) / i);
+    }
+    for (let i = period + 1; i < values.length; i += 1) {
+      const delta = values[i] - values[i - 1];
+      gain = finiteResult(gain * ((period - 1) / period) + Math.max(delta, 0) / period);
+      loss = finiteResult(loss * ((period - 1) / period) + Math.max(-delta, 0) / period);
+    }
+    if (gain === 0 && loss === 0) return 50;
+    if (loss === 0) return 100;
+    if (gain === 0) return 0;
+    // Equivalent to 100 * gain / (gain + loss), without adding large numbers.
+    const value = gain >= loss
+      ? 100 / (1 + loss / gain)
+      : 100 * (gain / loss) / (1 + gain / loss);
+    return finiteResult(value);
+  }
+
+  function analyze(values) {
+    validateValues(values, true);
+    if (values.length < MIN_ANALYSIS_ROWS) {
+      throw new Error("Se necesitan al menos 34 cierres para calcular todos los indicadores.");
+    }
+    const ema9 = emaUnchecked(values, 9);
+    const ema21 = emaUnchecked(values, 21);
+    const fast = emaUnchecked(values, 12);
+    const slow = emaUnchecked(values, 26);
+    const macdValues = [];
+    for (let i = 25; i < values.length; i += 1) {
+      macdValues.push(finiteResult(fast[i] - slow[i]));
+    }
+    const signalValues = emaUnchecked(macdValues, 9);
+    const end = values.length - 1;
+    const macd = macdValues[macdValues.length - 1];
+    const signal = signalValues[signalValues.length - 1];
+    return {
+      rsi: rsi(values, 14),
+      ema9: ema9[end],
+      ema21: ema21[end],
+      macd: macd,
+      signal: signal,
+      histogram: finiteResult(macd - signal),
+      count: values.length,
+      lastClose: values[end]
+    };
+  }
+
+  function parsePrice(text, line) {
+    const value = text.trim();
+    if (!DECIMAL.test(value)) {
+      throw new Error("Fila " + line + ": cierre inválido. Usa un número con punto decimal, " +
+        "sin separadores de miles ni notación científica.");
+    }
+    const number = Number(value);
+    if (!Number.isFinite(number) || number <= 0) {
+      throw new Error("Fila " + line + ": el cierre debe ser positivo y finito.");
+    }
+    return number;
+  }
+
+  function validCalendarDate(year, month, day) {
+    const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+    const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    return month >= 1 && month <= 12 && day >= 1 && day <= days[month - 1];
+  }
+
+  function parseTime(text, line) {
+    const value = text.trim();
+    let milliseconds;
+    if (/^\d{10}$/.test(value)) {
+      milliseconds = Number(value) * 1000;
+    } else if (/^\d{13}$/.test(value)) {
+      milliseconds = Number(value);
+    } else {
+      const date = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+      const stamp = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?(Z|[+-]\d{2}:?\d{2})$/.exec(value);
+      const match = date || stamp;
+      if (!match || !validCalendarDate(Number(match[1]), Number(match[2]), Number(match[3]))) {
+        throw new Error("Fila " + line + ": fecha inválida. Usa YYYY-MM-DD, una fecha ISO " +
+          "con zona (por ejemplo 2026-11-23T12:30:00Z), o UNIX de 10 o 13 dígitos.");
+      }
+      if (date) {
+        milliseconds = Date.parse(value + "T00:00:00.000Z");
+      } else {
+        const hour = Number(stamp[4]);
+        const minute = Number(stamp[5]);
+        const second = Number(stamp[6] || "0");
+        if (hour > 23 || minute > 59 || second > 59) {
+          throw new Error("Fila " + line + ": hora inválida; usa horas 00–23, minutos y segundos 00–59.");
+        }
+        const fraction = (stamp[7] || "").padEnd(3, "0");
+        const zone = stamp[8];
+        let offsetMinutes = 0;
+        if (zone !== "Z") {
+          const digits = zone.slice(1).replace(":", "");
+          const offsetHour = Number(digits.slice(0, 2));
+          const offsetMinute = Number(digits.slice(2, 4));
+          if (offsetHour > 23 || offsetMinute > 59) {
+            throw new Error("Fila " + line + ": la zona horaria no es válida.");
+          }
+          offsetMinutes = (offsetHour * 60 + offsetMinute) * (zone[0] === "+" ? 1 : -1);
+        }
+        const utcBase = stamp[1] + "-" + stamp[2] + "-" + stamp[3] + "T" +
+          stamp[4] + ":" + stamp[5] + ":" + (stamp[6] || "00") + "." + fraction + "Z";
+        milliseconds = Date.parse(utcBase) - offsetMinutes * 60000;
+      }
+    }
+    if (!Number.isFinite(milliseconds)) {
+      throw new Error("Fila " + line + ": fecha fuera del rango admitido.");
+    }
+    return milliseconds;
+  }
+
+  function detectDelimiter(text) {
+    let quoted = false;
+    let comma = 0;
+    let semicolon = 0;
+    for (let i = 0; i < text.length; i += 1) {
+      const character = text[i];
+      if (character === '"') {
+        if (quoted && text[i + 1] === '"') i += 1;
+        else quoted = !quoted;
+      } else if (!quoted) {
+        if (character === "\n") break;
+        if (character === ",") comma += 1;
+        if (character === ";") semicolon += 1;
+      }
+    }
+    if (comma && semicolon) {
+      throw new Error("La cabecera mezcla comas y punto y coma. Usa un único separador de columnas.");
+    }
+    return semicolon ? ";" : ",";
+  }
+
+  // CSV state machine: doubled quotes, quoted delimiters and quoted newlines.
+  function readCSV(text, delimiter) {
+    const records = [];
+    let fields = [];
+    let field = "";
+    let state = "plain";
+    let line = 1;
+    let recordLine = 1;
+
+    function finishField() {
+      fields.push(field);
+      field = "";
+      state = "plain";
+    }
+
+    function finishRecord() {
+      finishField();
+      records.push({ fields: fields, line: recordLine });
+      if (records.length > MAX_ROWS + 1) {
+        throw new Error("Se admiten como máximo 5000 filas de precios, además de la cabecera.");
+      }
+      fields = [];
+      recordLine = line + 1;
+    }
+
+    for (let i = 0; i < text.length; i += 1) {
+      const character = text[i];
+      if (state === "quoted") {
+        if (character === '"') {
+          if (text[i + 1] === '"') {
+            field += '"';
+            i += 1;
+          } else {
+            state = "afterQuote";
+          }
+        } else {
+          field += character;
+          if (character === "\n") line += 1;
+        }
+      } else if (character === delimiter) {
+        finishField();
+      } else if (character === "\n") {
+        finishRecord();
+        line += 1;
+      } else if (state === "afterQuote") {
+        if (character !== " " && character !== "\t") {
+          throw new Error("Fila " + line + ": hay texto inesperado después de unas comillas de cierre.");
+        }
+      } else if (character === '"') {
+        if (field.trim() !== "") {
+          throw new Error("Fila " + line + ": comillas mal colocadas en el CSV.");
+        }
+        field = "";
+        state = "quoted";
+      } else {
+        field += character;
+      }
+    }
+    if (state === "quoted") {
+      throw new Error("Fila " + recordLine + ": hay un campo entre comillas sin cerrar.");
+    }
+    finishRecord();
+    return records;
+  }
+
+  function parsePrices(text) {
+    if (typeof text !== "string") {
+      throw new Error("Pega una lista de cierres o el contenido de un archivo CSV.");
+    }
+    const source = text.replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n").trim();
+    if (!source) {
+      throw new Error("Todavía no hay precios. Pega una lista o carga un CSV.");
+    }
+
+    const firstLine = source.split("\n", 1)[0].trim();
+    if (DECIMAL.test(firstLine)) {
+      const lines = source.split("\n");
+      if (lines.length > MAX_ROWS) {
+        throw new Error("Se admiten como máximo 5000 precios.");
+      }
+      return {
+        values: lines.map(function (line, index) { return parsePrice(line, index + 1); }),
+        times: null,
+        format: "list"
+      };
+    }
+
+    const records = readCSV(source, detectDelimiter(source));
+    const headers = records[0].fields.map(function (field) { return field.trim().toLowerCase(); });
+    if (headers.some(function (header) { return !header; }) || new Set(headers).size !== headers.length) {
+      throw new Error("La cabecera debe tener nombres de columnas distintos y no vacíos.");
+    }
+    const closeColumns = [];
+    const timeColumns = [];
+    headers.forEach(function (header, index) {
+      if (CLOSE_HEADERS.has(header)) closeColumns.push(index);
+      if (TIME_HEADERS.has(header)) timeColumns.push(index);
+    });
+    if (closeColumns.length !== 1) {
+      throw new Error("El CSV debe tener una única columna close o cierre. " +
+        "Para una lista sin cabecera, pega un precio por línea con punto decimal.");
+    }
+    if (timeColumns.length > 1) {
+      throw new Error("Usa una sola columna de fecha: time, timestamp, date o fecha.");
+    }
+    if (records.length < 2) {
+      throw new Error("El CSV tiene cabecera pero no contiene precios.");
+    }
+    const values = [];
+    const times = timeColumns.length ? [] : null;
+    let previousTime = null;
+    for (let i = 1; i < records.length; i += 1) {
+      const record = records[i];
+      if (record.fields.length !== headers.length) {
+        throw new Error("Fila " + record.line + ": se esperaban " + headers.length +
+          " columnas y se encontraron " + record.fields.length + ".");
+      }
+      values.push(parsePrice(record.fields[closeColumns[0]], record.line));
+      if (times) {
+        const time = parseTime(record.fields[timeColumns[0]], record.line);
+        if (previousTime !== null && time <= previousTime) {
+          throw new Error("Fila " + record.line + ": las fechas deben ir de la más antigua " +
+            "a la más reciente, sin duplicados.");
+        }
+        previousTime = time;
+        times.push(new Date(time).toISOString());
+      }
+    }
+    return { values: values, times: times, format: "csv" };
+  }
+
+  root.PudoskyCore = Object.freeze({
+    emaSeries: emaSeries,
+    rsi: rsi,
+    analyze: analyze,
+    parsePrices: parsePrices
+  });
+})(globalThis);
+
+</script>
 <script>
-function seleccionarActivo(activo) {
-  document.getElementById("activoDemoEstado").textContent =
-    activo
-      ? "Activo elegido: " + activo + " · DEMO"
-      : "Ningún activo seleccionado.";
-}
+(function () {
+  "use strict";
+  var byId = function (id) { return document.getElementById(id); };
+  var historyKey = "pudosky-indicators-v2-history";
+  var history = [];
+  var currentMode = "user";
+  var calculated = false;
+  var fileGeneration = 0;
+  var counter = 0;
+  var fields = ["rsiValue", "ema9Value", "ema21Value", "macdValue", "signalValue", "histogramValue"];
+  var formatter = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 8 });
+  var fmt = function (value) { return formatter.format(value); };
+  var isExample = function () { return currentMode !== "user"; };
+
+  function message(text, type) {
+    byId("feedback").textContent = text;
+    byId("feedback").className = "message " + (type || "");
+  }
+  function resetResults(text) {
+    calculated = false;
+    fields.forEach(function (id) { byId(id).textContent = "—"; });
+    byId("resultOrigin").textContent = "SIN CÁLCULO VIGENTE";
+    byId("resultOrigin").className = "badge";
+    byId("resultMeta").textContent = text || "Carga precios para realizar un cálculo.";
+    byId("seriesBox").hidden = true;
+    byId("priceLine").setAttribute("points", "");
+    byId("status").textContent = "Calcula indicadores con una serie de precios que cargues.";
+  }
+  function dirty() {
+    resetResults("Los datos o sus etiquetas cambiaron. Vuelve a calcular.");
+    message("Cambios pendientes: pulsa «Calcular indicadores».");
+  }
+  function assetChanged() {
+    byId("customAssetBox").hidden = byId("activoDemo").value !== "OTRO";
+    var label = byId("activoDemo").value === "OTRO" ? byId("customAsset").value.trim() : byId("activoDemo").value;
+    byId("activoDemoEstado").textContent = label ? "Activo declarado: " + label + " · sin verificación de mercado" : "Ningún activo seleccionado.";
+    dirty();
+  }
+  function renderHistory() {
+    var list = byId("history");
+    list.replaceChildren();
+    if (!history.length) {
+      var empty = document.createElement("li");
+      empty.textContent = "Aún no hay cálculos guardados.";
+      list.appendChild(empty);
+      return;
+    }
+    history.forEach(function (item) {
+      var li = document.createElement("li");
+      var title = document.createElement("strong");
+      title.textContent = item.example ? "EJEMPLO FICTICIO" : item.asset;
+      var detail = document.createElement("p");
+      detail.textContent = new Date(item.created).toLocaleString("es-CO") + " · " + item.count + " cierres · RSI " + item.rsi.toFixed(2);
+      var provenance = document.createElement("p");
+      provenance.className = "muted";
+      provenance.textContent = item.example ? "Serie inventada para comprobar el cálculo." : "Fuente declarada, no verificada: " + item.source;
+      li.append(title, detail, provenance);
+      list.appendChild(li);
+    });
+  }
+  function persistHistory() {
+    try {
+      localStorage.setItem(historyKey, JSON.stringify(history));
+      byId("storageStatus").textContent = "Guardado en este navegador.";
+    } catch (error) {
+      byId("storageStatus").textContent = "El navegador no permite guardar. Este historial solo durará mientras la página esté abierta.";
+    }
+  }
+  function validHistoryItem(item) {
+    return item && typeof item.asset === "string" && typeof item.source === "string" &&
+      typeof item.example === "boolean" && Number.isFinite(item.rsi) && item.rsi >= 0 && item.rsi <= 100 &&
+      Number.isInteger(item.count) && item.count >= 34 && item.count <= 5000 &&
+      typeof item.created === "string" && Number.isFinite(Date.parse(item.created));
+  }
+  try {
+    var saved = JSON.parse(localStorage.getItem(historyKey) || "[]");
+    if (Array.isArray(saved)) history = saved.filter(validHistoryItem).slice(0, 10);
+  } catch (error) { byId("storageStatus").textContent = "No se ha recuperado un historial local."; }
+  renderHistory();
+
+  function draw(values) {
+    var lo = Math.min.apply(null, values);
+    var hi = Math.max.apply(null, values);
+    var span = hi - lo;
+    var points = values.map(function (value, i) {
+      var x = 18 + i / (values.length - 1) * 604;
+      var y = span === 0 ? 94 : 170 - (value - lo) / span * 152;
+      return x.toFixed(2) + "," + y.toFixed(2);
+    }).join(" ");
+    byId("priceLine").setAttribute("points", points);
+    byId("plotTitle").textContent = isExample() ? "Serie ficticia utilizada para este cálculo" : "Serie de cierres aportada por el usuario";
+  }
+
+  function calculate() {
+    resetResults("Cálculo pendiente.");
+    try {
+      var parsed = PudoskyCore.parsePrices(byId("prices").value);
+      var result = PudoskyCore.analyze(parsed.values);
+      var example = isExample();
+      var asset = example ? "SERIE FICTICIA · sin instrumento real" : (byId("activoDemo").value === "OTRO" ? byId("customAsset").value.trim() : byId("activoDemo").value);
+      if (!example && !asset) throw new Error("Selecciona el activo al que pertenecen tus precios, o escribe su símbolo en «Otro símbolo».");
+      var source = example ? "Datos inventados en esta página" : (byId("source").value.trim() || "No especificada");
+      var interval = example ? "Sin temporalidad de mercado" : (byId("interval").value || "Temporalidad no especificada");
+      byId("rsiValue").textContent = result.rsi.toFixed(2);
+      byId("ema9Value").textContent = fmt(result.ema9);
+      byId("ema21Value").textContent = fmt(result.ema21);
+      byId("macdValue").textContent = fmt(result.macd);
+      byId("signalValue").textContent = fmt(result.signal);
+      byId("histogramValue").textContent = fmt(result.histogram);
+      byId("resultOrigin").textContent = example ? "EJEMPLO FICTICIO" : "DATOS APORTADOS · FUENTE NO VERIFICADA";
+      byId("resultOrigin").className = "badge gold";
+      byId("resultMeta").textContent = asset + " · " + result.count + " cierres · " + interval + ". Fuente: " + source + ".";
+      var dates = parsed.times ? " Fechas: " + parsed.times[0] + " → " + parsed.times[parsed.times.length - 1] + ". El orden se comprobó; la temporalidad y los cierres no se verifican contra un proveedor." : " Sin fechas: no se puede comprobar antigüedad, temporalidad ni cierre de velas.";
+      byId("seriesInfo").textContent = "Último cierre: " + fmt(result.lastClose) + ". Mínimo: " + fmt(Math.min.apply(null, parsed.values)) + ". Máximo: " + fmt(Math.max.apply(null, parsed.values)) + "." + (example ? " Serie inventada, sin fecha de mercado." : dates);
+      draw(parsed.values);
+      byId("seriesBox").hidden = false;
+      byId("status").textContent = "Indicadores calculados · sin señal operativa evaluada.";
+      message(example ? "Ejemplo calculado. Los precios son ficticios; estos números no representan el mercado." : "Cálculo completo sobre tus datos. La procedencia no ha sido verificada.", "success");
+      var item = { created: new Date().toISOString(), example: example, asset: asset, source: source, count: result.count, rsi: result.rsi };
+      var signature = JSON.stringify([parsed.values, asset, source, interval, example]);
+      if (signature !== calculate.lastSignature) {
+        history.unshift(item); history = history.slice(0, 10); persistHistory(); renderHistory();
+        calculate.lastSignature = signature;
+      }
+      calculated = true;
+    } catch (error) {
+      resetResults("Falta una entrada válida para calcular los indicadores.");
+      message(error.message || "No se ha podido interpretar la serie de precios.", "error");
+      byId("inputDetails").open = true;
+    }
+  }
+
+  byId("calculateButton").addEventListener("click", calculate);
+  byId("exampleButton").addEventListener("click", function () {
+    fileGeneration++;
+    byId("calculateButton").disabled = false;
+    currentMode = "example";
+    var values = Array.from({ length: 120 }, function (_, i) {
+      return (100 + i * 0.035 + Math.sin(i * 0.27) * 1.8 + Math.cos(i * 0.11) * 0.65).toFixed(5);
+    });
+    byId("prices").value = values.join("\n");
+    byId("fileInput").value = "";
+    byId("source").value = "Ejemplo ficticio generado en esta página";
+    byId("source").readOnly = true;
+    byId("inputOrigin").textContent = "EJEMPLO FICTICIO · 120 números inventados para comprobar el motor. La selección de activo no se aplica a esta serie.";
+    calculate();
+  });
+  byId("userButton").addEventListener("click", function () {
+    fileGeneration++;
+    byId("calculateButton").disabled = false;
+    currentMode = "user";
+    byId("prices").value = "";
+    byId("source").value = "";
+    byId("source").readOnly = false;
+    byId("fileInput").value = "";
+    byId("inputOrigin").textContent = "Datos que tú aportas. La fuente y el activo se registrarán como declaraciones sin verificar.";
+    byId("inputDetails").open = true;
+    resetResults("Importa un archivo o pega al menos 34 cierres.");
+    message("Selecciona el activo, carga sus precios y pulsa «Calcular indicadores».");
+  });
+  byId("prices").addEventListener("input", function () {
+    fileGeneration++;
+    byId("calculateButton").disabled = false;
+    if (isExample()) {
+      currentMode = "exampleEdited";
+      byId("inputOrigin").textContent = "EJEMPLO FICTICIO EDITADO · sigue siendo una serie de prueba. Usa «Preparar mis propios datos» para cargar otra fuente.";
+    }
+    dirty();
+  });
+  byId("activoDemo").addEventListener("change", assetChanged);
+  byId("customAsset").addEventListener("input", assetChanged);
+  byId("interval").addEventListener("change", dirty);
+  byId("source").addEventListener("input", dirty);
+  byId("fileInput").addEventListener("change", async function (event) {
+    var token = ++fileGeneration;
+    var file = event.target.files[0];
+    if (!file) {
+      byId("calculateButton").disabled = false;
+      return;
+    }
+    currentMode = "user";
+    byId("prices").value = "";
+    byId("source").value = "";
+    byId("source").readOnly = false;
+    byId("inputOrigin").textContent = "Leyendo archivo: " + file.name;
+    resetResults("Leyendo archivo.");
+    if (file.size > 500000) {
+      message("El archivo supera 500 KB. Usa un archivo con un máximo de 5.000 cierres.", "error");
+      byId("fileInput").value = "";
+      byId("calculateButton").disabled = false;
+      return;
+    }
+    byId("calculateButton").disabled = true;
+    try {
+      var text = await file.text();
+      if (token !== fileGeneration) return;
+      currentMode = "user";
+      byId("prices").value = text;
+      byId("source").readOnly = false;
+      byId("source").value = "";
+      byId("inputOrigin").textContent = "Archivo cargado: " + file.name + " · contenido y fuente pendientes de validación.";
+      message("Revisa el activo y la fuente del archivo. Después pulsa «Calcular indicadores».");
+    } catch (error) {
+      if (token === fileGeneration) message("No se pudo leer el archivo. Prueba a pegar sus cierres en el cuadro de texto.", "error");
+    } finally { if (token === fileGeneration) byId("calculateButton").disabled = false; }
+  });
+  byId("clearHistory").addEventListener("click", function () {
+    history = []; calculate.lastSignature = null; persistHistory(); renderHistory();
+  });
+  byId("testButton").addEventListener("click", function () {
+    counter++; byId("total").textContent = String(counter);
+  });
+  byId("stateButton").addEventListener("click", function () {
+    alert("PUDOSKY TRADING · Laboratorio DEMO. Sin conexión a IQ Option. " + (calculated ? "Hay un cálculo de indicadores disponible." : "Aún no hay un cálculo vigente."));
+  });
+})();
 </script>
 </body>
 </html>
