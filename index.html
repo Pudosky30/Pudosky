@@ -627,6 +627,9 @@ var escenarioDemo = evaluarReglasDemo(
   result.ema21,
   result.macd
 );
+      byId("escenarioCalculadoDemo").textContent =
+  "Escenario educativo: " + escenarioDemo +
+  (example ? " (DATOS FICTICIOS)" : " (DATOS CARGADOS)");
       byId("resultOrigin").textContent = example ? "EJEMPLO FICTICIO" : "DATOS APORTADOS · FUENTE NO VERIFICADA";
       byId("resultOrigin").className = "badge gold";
       byId("resultMeta").textContent = asset + " · " + result.count + " cierres · " + interval + ". Fuente: " + source + ".";
