@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PUDOSKY - Pruebas historicas</title>
+<style>
+:root{color-scheme:dark;font-family:Arial,sans-serif}
+body{margin:0;background:#101827;color:#e8efff;line-height:1.5}
+main{max-width:850px;margin:auto;padding:26px 16px}
+h1{color:#61e3a5;margin-bottom:4px}h2{font-size:1.2rem}
+section{background:#1d2b40;border:1px solid #42536c;border-radius:14px;padding:18px;margin:16px 0}
+small,.muted{color:#b5c4da}
+input,button{font:inherit}input{max-width:100%}
+button{background:#44d99b;color:#06251b;border:0;border-radius:9px;padding:12px 18px;margin-top:14px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+.metricas{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.metricas div{background:#121d2e;border-radius:9px;padding:14px}
+.metricas strong{display:block;font-size:1.55rem;color:#fff}
+.error{color:#ffb9b9}.exito{color:#89f0bb}
+table{width:100%;border-collapse:collapse;font-size:.85rem}td,th{text-align:left;padding:9px;border-bottom:1px solid #40516a}
+.scroll{overflow-x:auto}a{color:#9cd9ff}
+</style>
+</head>
+<body>
+<main>
+<h1>PUDOSKY · Laboratorio histórico</h1>
+<p class="muted">Prueba educativa de dirección de precios. No se conecta con IQ Option ni coloca operaciones.</p>
+<section>
+<h2>1. Cargar datos con fechas</h2>
+<p>Selecciona un CSV de <strong>EUR/USD normal · M1</strong>, en orden del más antiguo al más reciente. Acepta <code>fecha_hora_origen,cierre</code> o CSV original de HistData con fecha, apertura, máximo, mínimo, cierre y volumen.</p>
+<input id="archivo" type="file" accept=".csv,.txt,text/csv,text/plain">
+<p id="estado" class="muted">Aún no se ha seleccionado un archivo.</p>
+<button id="calcular">Ejecutar prueba histórica</button>
+</section>
+<section>
+<h2>2. Metodología y límites</h2>
+<p>Al cierre de cada minuto se calculan <strong>RSI 14, EMA 9 y 21, MACD 12/26/9</strong>. Se revisan las reglas de PUDOSKY usando solo datos disponibles hasta ese momento. Se compara el cierre actual con el cierre de la vela siguiente, únicamente si los horarios están separados por exactamente 1 minuto.</p>
+<p><strong>Alcista:</strong> EMA 9 &gt; EMA 21, MACD &gt; 0, RSI entre 50 y 70. <strong>Bajista:</strong> EMA 9 &lt; EMA 21, MACD &lt; 0, RSI entre 30 y 50. En los demás casos: ESPERAR.</p>
+<p class="muted">Esto no reproduce el precio real de entrada, el vencimiento exacto ni la rentabilidad de opciones digitales. No incluye spread, retrasos, deslizamiento ni pago del bróker. Es una exploración histórica, no una estrategia validada ni una recomendación de trading.</p>
+</section>
+<section id="resultados" hidden>
+<h2>3. Resultados hipotéticos</h2>
+<p id="periodo"></p>
+<div class="metricas">
+<div>Observaciones<strong id="n"></strong></div>
+<div>Oportunidades evaluadas<strong id="ops"></strong></div>
+<div>Aciertos<strong id="ganadas"></strong></div>
+<div>Fallos<strong id="perdidas"></strong></div>
+<div>Empates<strong id="empates"></strong></div>
+<div>Acierto sobre decisiones no empatadas<strong id="tasa"></strong></div>
+</div>
+<p id="huecos" class="muted"></p>
+<h2>Últimas decisiones históricas</h2>
+<div class="scroll"><table><thead><tr><th>Momento</th><th>Hipótesis</th><th>Cierre</th><th>Siguiente</th><th>Resultado</th></tr></thead><tbody id="filas"></tbody></table></div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const formato=n=>n.toFixed(6);
+function fecha(s){
+  let m=s.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/);
+  if(!m)m=s.match(/^(\d{4})(\d{2})(\d{2})[ T](\d{2})(\d{2})(\d{2})/);
+  if(!m)return null;
+  const [y,mes,d,h,min,sec]=m.slice(1).map(Number);
+  const ms=Date.UTC(y,mes-1,d,h,min,sec||0);
+  const v=new Date(ms);
+  if(v.getUTCFullYear()!==y||v.getUTCMonth()!==mes-1||v.getUTCDate()!==d||v.getUTCHours()!==h||v.getUTCMinutes()!==min)return null;
+  return ms;
+}
+function leer(texto){
+  const datos=[];
+  for(const linea of texto.replace(/^\uFEFF/,'').split(/\r?\n/)){
+    if(!linea.trim())continue;
+    const c=linea.trim().split(/[,;\t]/).map(s=>s.trim());
+    const t=fecha(c[0]);
+    if(t===null)continue; // Omite encabezados
+    const precio=Number(c.length>=5?c[4]:c[1]);
+    if(!Number.isFinite(precio)||precio<=0)throw Error('Hay un cierre inválido en el archivo.');
+    if(datos.length && t<=datos[datos.length-1].t)throw Error('Las fechas deben estar ordenadas y no repetirse.');
+    datos.push({t,p:precio});
+  }
+  if(datos.length<35)throw Error('Se necesitan al menos 35 cierres con fechas válidas. Los TXT de precios sin fecha no sirven para verificar intervalos de 1 minuto.');
+  return datos;
+}
+function ema(v,n){
+  let actual=v[0];const a=2/(n+1),salida=[];
+  for(const x of v){actual+=a*(x-actual);salida.push(actual)}
+  return salida;
+}
+function rsi(v){
+  const r=Array(v.length).fill(NaN);let g=0,l=0;
+  for(let i=1;i<=14;i++){const d=v[i]-v[i-1];g+=Math.max(d,0);l+=Math.max(-d,0)}
+  g/=14;l/=14;
+  const calc=()=>l===0?(g===0?50:100):100-100/(1+g/l);
+  r[14]=calc();
+  for(let i=15;i<v.length;i++){
+    const d=v[i]-v[i-1];g=(g*13+Math.max(d,0))/14;l=(l*13+Math.max(-d,0))/14;r[i]=calc();
+  }
+  return r;
+}
+function ejecutar(datos){
+  const v=datos.map(x=>x.p),e9=ema(v,9),e21=ema(v,21),e12=ema(v,12),e26=ema(v,26);
+  const macd=e12.map((x,i)=>x-e26[i]),r=rsi(v);
+  let gana=0,pierde=0,empata=0,huecos=0;const eventos=[];
+  for(let i=35;i<v.length-1;i++){
+    if(datos[i+1].t-datos[i].t!==60000){huecos++;continue}
+    let sentido='';
+    if(e9[i]>e21[i]&&macd[i]>0&&r[i]>=50&&r[i]<=70)sentido='ALCISTA';
+    else if(e9[i]<e21[i]&&macd[i]<0&&r[i]>=30&&r[i]<=50)sentido='BAJISTA';
+    if(!sentido)continue;
+    const dif=v[i+1]-v[i],signo=sentido==='ALCISTA'?1:-1;
+    const resultado=dif===0?'Empate':dif*signo>0?'Acierto':'Fallo';
+    if(resultado==='Acierto')gana++;else if(resultado==='Fallo')pierde++;else empata++;
+    eventos.push({t:datos[i].t,sentido,entrada:v[i],salida:v[i+1],resultado});
+  }
+  $('resultados').hidden=false;
+  $('periodo').textContent='Desde '+new Date(datos[0].t).toISOString().slice(0,16).replace('T',' ')+' hasta '+new Date(datos.at(-1).t).toISOString().slice(0,16).replace('T',' ')+' (hora indicada en el CSV).';
+  $('n').textContent=datos.length.toLocaleString('es-CO');$('ops').textContent=eventos.length;
+  $('ganadas').textContent=gana;$('perdidas').textContent=pierde;$('empates').textContent=empata;
+  $('tasa').textContent=gana+pierde?((100*gana/(gana+pierde)).toFixed(1)+' %'):'Sin datos';
+  $('huecos').textContent='Intervalos no consecutivos omitidos al evaluar el minuto siguiente: '+huecos+'. Los empates se muestran aparte. Los resultados no representan ganancias económicas.';
+  $('filas').replaceChildren();
+  for(const x of eventos.slice(-12).reverse()){
+    const tr=document.createElement('tr');
+    for(const txt of [new Date(x.t).toISOString().slice(0,16).replace('T',' '),x.sentido,formato(x.entrada),formato(x.salida),x.resultado]){
+      const td=document.createElement('td');td.textContent=txt;tr.append(td);
+    }
+    $('filas').append(tr);
+  }
+}
+$('calcular').addEventListener('click',async()=>{
+  $('resultados').hidden=true;
+  const f=$('archivo').files[0];if(!f){$('estado').textContent='Primero selecciona un CSV con fecha y cierre.';return}
+  try{
+    const datos=leer(await f.text());ejecutar(datos);
+    $('estado').className='exito';$('estado').textContent='Datos leídos: '+datos.length+' cierres. Fuente y precios no verificados de manera independiente.';
+  }catch(err){$('estado').className='error';$('estado').textContent=err.message}
+});
+</script>
+</body>
+</html>
