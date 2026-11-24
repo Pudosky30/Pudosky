@@ -828,5 +828,86 @@ function probarReglasDemo() {
     Simulación pendiente.
   </p>
 </section>
+ <script>
+(function () {
+  const boton = document.getElementById("simularHistoria");
+  const salida = document.getElementById("resultadoHistoria");
+
+  if (!boton || !salida) return;
+
+  boton.disabled = false;
+  boton.textContent = "Probar simulación ficticia";
+
+  boton.addEventListener("click", function () {
+    const fuente = document.getElementById("source");
+
+    if (!fuente || !fuente.readOnly ||
+        !/ficticio/i.test(fuente.value)) {
+      salida.textContent =
+        "Primero pulsa Probar con datos ficticios.";
+      return;
+    }
+
+    try {
+      const precios = PudoskyCore.parsePrices(
+        document.getElementById("prices").value
+      ).values;
+
+      let alcistas = 0;
+      let bajistas = 0;
+      let esperar = 0;
+      let coincidencias = 0;
+      let diferencias = 0;
+      let empates = 0;
+
+      for (let i = 33; i < precios.length - 1; i++) {
+        const datos = precios.slice(0, i + 1);
+        const r = PudoskyCore.analyze(datos);
+
+        const escenario = evaluarReglasDemo(
+          r.rsi, r.ema9, r.ema21, r.macd
+        );
+
+        if (escenario === "ESPERAR") {
+          esperar++;
+          continue;
+        }
+
+        if (escenario === "ESCENARIO ALCISTA") {
+          alcistas++;
+        } else {
+          bajistas++;
+        }
+
+        const cambio = precios[i + 1] - precios[i];
+
+        if (cambio === 0) {
+          empates++;
+        } else if (
+          (escenario === "ESCENARIO ALCISTA" && cambio > 0) ||
+          (escenario === "ESCENARIO BAJISTA" && cambio < 0)
+        ) {
+          coincidencias++;
+        } else {
+          diferencias++;
+        }
+      }
+
+      salida.textContent =
+        "DATOS FICTICIOS | Alcistas: " + alcistas +
+        " | Bajistas: " + bajistas +
+        " | Esperar: " + esperar +
+        " | Coincidencias: " + coincidencias +
+        " | No coincidencias: " + diferencias +
+        " | Empates: " + empates +
+        ". Esto NO mide ganancias ni rentabilidad.";
+
+    } catch (error) {
+      salida.textContent =
+        "No se pudo completar la prueba: " + error.message;
+    }
+  });
+})();
+</script> 
 </body>
 </html>
