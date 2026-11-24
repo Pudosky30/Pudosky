@@ -757,5 +757,28 @@ antes de utilizarse.
     Sin señales reales ni operaciones automáticas.
   </small>
 </section>
+  <script>
+function evaluarReglasDemo(rsi, ema9, ema21, macd) {
+  if (
+    ema9 > ema21 &&
+    macd > 0 &&
+    rsi >= 50 &&
+    rsi <= 70
+  ) {
+    return "ESCENARIO ALCISTA";
+  }
+
+  if (
+    ema9 < ema21 &&
+    macd < 0 &&
+    rsi >= 30 &&
+    rsi <= 50
+  ) {
+    return "ESCENARIO BAJISTA";
+  }
+
+  return "ESPERAR";
+}
+</script>
 </body>
 </html>
