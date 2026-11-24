@@ -620,6 +620,13 @@
       byId("macdValue").textContent = fmt(result.macd);
       byId("signalValue").textContent = fmt(result.signal);
       byId("histogramValue").textContent = fmt(result.histogram);
+      // Evaluación educativa, sin operaciones reales
+var escenarioDemo = evaluarReglasDemo(
+  result.rsi,
+  result.ema9,
+  result.ema21,
+  result.macd
+);
       byId("resultOrigin").textContent = example ? "EJEMPLO FICTICIO" : "DATOS APORTADOS · FUENTE NO VERIFICADA";
       byId("resultOrigin").className = "badge gold";
       byId("resultMeta").textContent = asset + " · " + result.count + " cierres · " + interval + ". Fuente: " + source + ".";
