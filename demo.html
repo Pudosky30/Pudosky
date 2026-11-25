@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0e1729">
+<title>PUDOSKY V5 | Demo automatica historica</title>
+<style>
+:root{color-scheme:dark;--bg:#0e1729;--card:#1b2a42;--line:#3c526d;--ink:#ecf4ff;--muted:#b1c4de;--green:#4ad9a0;--red:#ff8e9c;--gold:#f1d58e;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#182a47,var(--bg) 68%);color:var(--ink);line-height:1.48}
+main{max-width:1050px;margin:auto;padding:24px 15px 70px}
+header{padding:10px 0 9px}
+h1{color:var(--green);font-size:clamp(1.75rem,5vw,2.5rem);line-height:1.12;margin:0 0 9px}
+h2{font-size:1.18rem;margin:0 0 12px}
+p{margin:8px 0 12px}
+.muted,small{color:var(--muted)}
+.warn{border-left:4px solid var(--gold);padding:10px 14px;background:#2e2c31;border-radius:6px;color:#f4e9cd;margin:16px 0}
+section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:21px;margin:18px 0;box-shadow:0 6px 28px #080f1b38}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+label{font-weight:650}
+input,select,button{font:inherit}
+input[type=file]{width:100%;max-width:100%}
+input[type=number],select{border:1px solid #687d96;border-radius:9px;padding:10px;background:#102039;color:var(--ink);width:100%}
+input:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid var(--green);outline-offset:3px}
+button{border:1px solid transparent;background:var(--green);color:#05291d;border-radius:10px;padding:12px 17px;min-height:46px;font-weight:750;cursor:pointer}
+button.secondary{border-color:#6a819e;background:transparent;color:var(--ink)}
+button:disabled{opacity:.42;cursor:not-allowed}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.metricas{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px;margin-top:14px}
+.metricas>div{background:#101f35;border:1px solid #34465f;border-radius:12px;padding:12px}
+.metricas strong{display:block;color:#fff;font-size:clamp(1.25rem,4vw,1.7rem);font-variant-numeric:tabular-nums}
+.metricas span{color:var(--muted);font-size:.82rem}
+.emph{color:var(--green)!important}.neg{color:var(--red)!important}
+progress{width:100%;height:16px;accent-color:var(--green)}
+#chart{width:100%;height:185px;display:block;background:#102039;border:1px solid #34465f;border-radius:10px}
+.scroll{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:600px;font-size:.88rem}
+tr{border-bottom:1px solid #3e546d}
+th,td{text-align:left;padding:9px 10px;white-space:nowrap}
+th{color:var(--muted)}
+#estadoArchivo,#estadoBot{min-height:1.5em}
+.good{color:#90f0c0}.bad{color:#ffb2bd}
+footer{font-size:.88rem;color:var(--muted);margin:20px 2px}
+@media(max-width:520px){section{padding:16px}.actions button{flex:1 1 120px}.metricas{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>PUDOSKY V5 · DEMO automático</h1>
+<p class="muted">Operaciones virtuales con reproducción acelerada de precios históricos de EUR/USD normal (M1).</p>
+<div class="warn"><strong>Solo simulación.</strong> No se conecta con IQ Option, no obtiene cotizaciones en tiempo real y no envía operaciones a ningún bróker. La precisión histórica no garantiza ganancias futuras.</div>
+</header>
+<section>
+<h2>1. Cargar precios históricos</h2>
+<p>Selecciona un CSV de HistData con fecha y cierre de cada vela de 1 minuto. Puedes usar el archivo de octubre de 2026 que descargaste. Todo se procesa en tu navegador y no se sube al servidor.</p>
+<label for="archivo">Archivo CSV</label>
+<input type="file" id="archivo" accept=".csv,.txt,text/csv,text/plain">
+<p id="estadoArchivo" class="muted" role="status">Ningún archivo seleccionado.</p>
+</section>
+<section>
+<h2>2. Configurar una cuenta virtual</h2>
+<div class="grid">
+<div class="field"><label for="capital">Saldo inicial ficticio (USD)</label><input id="capital" type="number" min="10" max="100000" step="1" value="1000"></div>
+<div class="field"><label for="apuesta">Importe por operación (USD)</label><input id="apuesta" type="number" min="0.1" max="1000" step="0.1" value="1"></div>
+<div class="field"><label for="pago">Pago supuesto por acierto (%)</label><input id="pago" type="number" min="0" max="100" step="1" value="80"></div>
+<div class="field"><label for="limite">Límite de pérdida virtual (USD)</label><input id="limite" type="number" min="1" max="100000" step="1" value="50"></div>
+<div class="field"><label for="velocidad">Velocidad de reproducción</label><select id="velocidad"><option value="10">Lenta: 10 velas por paso</option><option value="100">Media: 100 velas por paso</option><option value="500" selected>Rápida: 500 velas por paso</option></select></div>
+</div>
+<p class="muted"><small>El 80 % es una hipótesis editable, no una cotización real. Un acierto suma 80 % de la apuesta, un fallo pierde la apuesta y un empate devuelve el importe en este ejemplo. No se modelan spreads, latencia ni reglas exactas de vencimiento.</small></p>
+<div class="actions">
+<button id="iniciar" disabled>Iniciar DEMO automático</button>
+<button id="pausar" class="secondary" disabled>Pausar</button>
+<button id="reiniciar" class="secondary" disabled>Reiniciar simulación</button>
+</div>
+<p id="estadoBot" role="status" class="muted">Carga un archivo para comenzar.</p>
+<label for="avance">Avance del historial</label>
+<progress id="avance" value="0" max="100">0 %</progress>
+<p id="posicion" class="muted">Sin operaciones en curso.</p>
+</section>
+<section>
+<h2>3. Resultados de la cuenta DEMO</h2>
+<div class="metricas">
+<div><span>Saldo virtual</span><strong id="saldo">$1.000,00</strong></div>
+<div><span>Resultado virtual</span><strong id="neto">$0,00</strong></div>
+<div><span>Operaciones cerradas</span><strong id="ops">0</strong></div>
+<div><span>Aciertos</span><strong id="ganadas">0</strong></div>
+<div><span>Fallos</span><strong id="perdidas">0</strong></div>
+<div><span>Empates</span><strong id="empates">0</strong></div>
+<div><span>Tasa sin empates</span><strong id="tasa">—</strong></div>
+<div><span>Intervalos omitidos</span><strong id="huecos">0</strong></div>
+</div>
+<p class="muted"><small>Gráfica de evolución de saldo virtual. La simulación comienza después de las velas necesarias para calcular los indicadores.</small></p>
+<canvas id="chart" aria-label="Gráfico del saldo virtual"></canvas>
+<h2 style="margin-top:22px">Últimas operaciones virtuales</h2>
+<div class="scroll"><table><thead><tr><th>Minuto (CSV)</th><th>Hipótesis</th><th>Entrada</th><th>Siguiente cierre</th><th>Resultado</th><th>Cambio virtual</th></tr></thead><tbody id="historial"><tr><td colspan="6">Aún no hay operaciones virtuales.</td></tr></tbody></table></div>
+</section>
+<section>
+<h2>4. Reglas y limitaciones</h2>
+<p>Al cerrar una vela se calculan <strong>RSI 14 (Wilder), EMA 9 y EMA 21, y MACD 12/26/9</strong> utilizando datos anteriores o actuales, nunca el cierre siguiente. Se plantea una dirección para el minuto siguiente si:</p>
+<p><strong>Alcista:</strong> EMA 9 &gt; EMA 21, línea MACD &gt; 0, RSI de 50 a 70. <strong>Bajista:</strong> EMA 9 &lt; EMA 21, línea MACD &lt; 0, RSI de 30 a 50. Si no se cumplen, se espera.</p>
+<p>El programa cierra cada operación hipotética al <strong>cierre de la siguiente vela de exactamente 1 minuto</strong>. Cuando falta ese minuto, omite el resultado; no inventa precios. Nunca hay más de una operación virtual abierta a la vez. Se detiene al alcanzar el límite de pérdidas o si falta saldo suficiente.</p>
+<p class="muted">El CSV contiene datos de EUR/USD normal; no representa EUR/USD (OTC) ni su pago o ejecución. Esta prueba no es una cuenta DEMO del bróker ni contiene conexión con su plataforma.</p>
+</section>
+<footer>PUDOSKY · Laboratorio educativo. No requiere contraseña ni depósito de dinero.</footer>
+</main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const cfgIds=['capital','apuesta','pago','limite','velocidad'];
+let datos=[],ind=null,s=null,temporizador=null,duplicadas=0;
+const usd=n=>new Intl.NumberFormat('es-CO',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
+const numero=n=>new Intl.NumberFormat('es-CO').format(n);
+const fmtFecha=t=>new Date(t).toISOString().slice(0,16).replace('T',' ');
+const fmtPrecio=v=>v.toFixed(6);
+function fechaUTC(cadena){
+ let m=cadena.match(/^(\d{4})(\d{2})(\d{2})[ T](\d{2})(\d{2})(\d{2})$/);
+ if(!m)m=cadena.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?$/);
+ if(!m)return null;
+ const a=m.slice(1).map(Number),[y,mo,d,h,mi,se=0]=a;
+ const t=Date.UTC(y,mo-1,d,h,mi,se),v=new Date(t);
+ if(v.getUTCFullYear()!==y||v.getUTCMonth()!==mo-1||v.getUTCDate()!==d||v.getUTCHours()!==h||v.getUTCMinutes()!==mi||v.getUTCSeconds()!==se)return null;
+ return t;
+}
+function leerCSV(texto){
+ const rows=[],vistas=new Set();let rep=0,total=0;
+ for(const line of texto.replace(/^\uFEFF/,'').split(/\r?\n/)){
+   if(!line.trim())continue;
+   total++;
+   const c=line.trim().split(/[;,\t]/).map(x=>x.trim());
+   const t=fechaUTC(c[0]);
+   if(t===null){if(total===1)continue;throw Error('Fecha inválida en la fila '+total+'. Usa un CSV de HistData M1.');}
+   const p=Number(c.length>=5?c[4]:c[1]);
+   if(!Number.isFinite(p)||p<=0)throw Error('Precio de cierre inválido en la fila '+total+'.');
+   if(vistas.has(t)){rep++;continue;}
+   if(rows.length && t<rows[rows.length-1].t)throw Error('Las fechas del archivo no están en orden cronológico.');
+   vistas.add(t);rows.push({t,p});
+   if(rows.length>300000)throw Error('Archivo demasiado grande. Divide el CSV en varios periodos.');
+ }
+ if(rows.length<50)throw Error('Se necesitan al menos 50 velas M1 con fechas válidas.');
+ return {rows,rep};
+}
+function ema(v,n){let x=v[0],a=2/(n+1);return v.map(p=>{x+=a*(p-x);return x;});}
+function rsi(v){
+ const r=Array(v.length).fill(NaN);let g=0,l=0;
+ for(let i=1;i<=14;i++){const d=v[i]-v[i-1];g+=Math.max(d,0);l+=Math.max(-d,0);}
+ g/=14;l/=14;
+ const valor=()=>l===0?(g===0?50:100):100-100/(1+g/l);
+ r[14]=valor();
+ for(let i=15;i<v.length;i++){const d=v[i]-v[i-1];g=(g*13+Math.max(d,0))/14;l=(l*13+Math.max(-d,0))/14;r[i]=valor();}
+ return r;
+}
+function preparar(v){
+ const e9=ema(v,9),e21=ema(v,21),e12=ema(v,12),e26=ema(v,26),r=rsi(v);
+ return {e9,e21,macd:e12.map((x,i)=>x-e26[i]),r};
+}
+function senal(i){
+ if(i<35)return '';
+ const {e9,e21,macd,r}=ind;
+ if(e9[i]>e21[i]&&macd[i]>0&&r[i]>=50&&r[i]<=70)return 'ALCISTA';
+ if(e9[i]<e21[i]&&macd[i]<0&&r[i]>=30&&r[i]<=50)return 'BAJISTA';
+ return '';
+}
+function valorConfig(){
+ const initial=Number($('capital').value),stake=Number($('apuesta').value),payout=Number($('pago').value),limit=Number($('limite').value);
+ if(!Number.isFinite(initial)||initial<10||initial>100000)throw Error('El saldo inicial debe estar entre 10 y 100.000 USD virtuales.');
+ if(!Number.isFinite(stake)||stake<.1||stake>1000||stake>initial)throw Error('La apuesta debe estar entre 0,10 y 1.000 USD, sin superar el saldo inicial.');
+ if(!Number.isFinite(payout)||payout<0||payout>100)throw Error('El pago supuesto debe estar entre 0 % y 100 %.');
+ if(!Number.isFinite(limit)||limit<1||limit>initial)throw Error('El límite de pérdida debe estar entre 1 USD y el saldo inicial.');
+ return {initial,stake,payout:payout/100,limit};
+}
+function configDisabled(bool){for(const id of cfgIds)$(id).disabled=bool;}
+function nuevaSimulacion(){
+ const conf=valorConfig();
+ s={...conf,index:35,balance:conf.initial,w:0,l:0,tie:0,gap:0,pending:null,history:[],curve:[conf.initial],done:false};
+ $('reiniciar').disabled=false;
+ pintar();
+}
+function registrar(p,cierre,resultado,cambio){
+ s.balance=Math.round((s.balance+cambio)*1e8)/1e8;
+ if(resultado==='Acierto')s.w++;else if(resultado==='Fallo')s.l++;else s.tie++;
+ s.history.push({t:p.t,d:p.d,entry:p.price,exit:cierre,resultado,cambio});
+ s.curve.push(s.balance);
+}
+function avanzarUno(){
+ if(!s||s.done)return;
+ const i=s.index;
+ if(i>=datos.length){s.done=true;finalizar('Historial terminado.');return;}
+ const actual=datos[i];
+ if(s.pending){
+   const p=s.pending;s.pending=null;
+   if(actual.t-p.t===60000){
+      const diff=actual.p-p.price,correcto=p.d==='ALCISTA'?diff>0:diff<0;
+      const resultado=diff===0?'Empate':correcto?'Acierto':'Fallo';
+      const cambio=diff===0?0:correcto?s.stake*s.payout:-s.stake;
+      registrar(p,actual.p,resultado,cambio);
+   }else{s.gap++;}
+ }
+ if(s.initial-s.balance>=s.limit){s.done=true;finalizar('Se alcanzó el límite de pérdida virtual.');return;}
+ if(s.balance+1e-7<s.stake){s.done=true;finalizar('Saldo virtual insuficiente para la próxima operación.');return;}
+ if(i<datos.length-1){
+    const d=senal(i);
+    if(d)s.pending={t:actual.t,price:actual.p,d};
+ }
+ s.index++;
+ if(s.index>=datos.length){s.done=true;finalizar('Historial terminado.');}
+}
+function detenerTimer(){if(temporizador!==null){clearInterval(temporizador);temporizador=null;}}
+function finalizar(mensaje){detenerTimer();configDisabled(false);$('pausar').disabled=true;$('iniciar').disabled=false;$('iniciar').textContent='Volver a comenzar';$('estadoBot').textContent=mensaje+' Es una simulación histórica, no un resultado de mercado en vivo.';}
+function ciclo(){
+ const count=Number($('velocidad').value)||100;
+ for(let n=0;n<count&&s&&!s.done;n++)avanzarUno();
+ pintar();
+}
+function iniciar(){
+ if(!datos.length)return;
+ try{
+   if(!s||s.done)nuevaSimulacion();
+   configDisabled(true);
+   $('pausar').disabled=false;$('pausar').textContent='Pausar';
+   $('iniciar').disabled=true;
+   $('estadoBot').textContent='Reproduciendo datos históricos; las operaciones son solo virtuales.';
+   detenerTimer();temporizador=setInterval(ciclo,60);
+ }catch(e){$('estadoBot').textContent=e.message;$('estadoBot').className='bad';}
+}
+function pausa(){
+ if(temporizador!==null){
+   detenerTimer();$('pausar').textContent='Continuar';$('iniciar').disabled=true;
+   $('estadoBot').textContent='Simulación en pausa. Puedes continuar o reiniciar.';
+ }else{
+   $('pausar').textContent='Pausar';$('estadoBot').textContent='Reproduciendo datos históricos; operaciones virtuales.';
+   temporizador=setInterval(ciclo,60);
+ }
+}
+function reiniciar(){
+ detenerTimer();s=null;configDisabled(false);
+ $('iniciar').disabled=!datos.length;$('iniciar').textContent='Iniciar DEMO automático';
+ $('pausar').disabled=true;$('pausar').textContent='Pausar';$('reiniciar').disabled=true;
+ $('estadoBot').textContent='Simulación reiniciada. El archivo sigue disponible.';
+ pintar();
+}
+function ponerTexto(id,v){$(id).textContent=v;}
+function pintar(){
+ const x=s,b=x?x.balance:Number($('capital').value)||1000;
+ ponerTexto('saldo',usd(b));ponerTexto('neto',usd(b-(x?x.initial:b)));
+ $('neto').className=x?(b<x.initial?'neg':b>x.initial?'emph':''):'';
+ ponerTexto('ops',numero(x?x.w+x.l+x.tie:0));ponerTexto('ganadas',numero(x?x.w:0));
+ ponerTexto('perdidas',numero(x?x.l:0));ponerTexto('empates',numero(x?x.tie:0));
+ ponerTexto('huecos',numero(x?x.gap:0));
+ ponerTexto('tasa',x&&(x.w+x.l)?(100*x.w/(x.w+x.l)).toFixed(1).replace('.',',')+' %':'—');
+ const percent=x?100*Math.min(x.index,datos.length)/datos.length:0;$('avance').value=percent;
+ ponerTexto('posicion',x?(x.pending?'Operación virtual abierta: '+x.pending.d+' desde '+fmtFecha(x.pending.t)+'; se resolverá al siguiente cierre válido.':'Sin operación virtual abierta. Progreso: '+percent.toFixed(1)+' %.'):'Sin operaciones en curso.');
+ const tb=$('historial');tb.replaceChildren();
+ if(!x||!x.history.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=6;td.textContent='Aún no hay operaciones virtuales.';tr.appendChild(td);tb.appendChild(tr);}
+ else for(const t of x.history.slice(-12).reverse()){
+  const tr=document.createElement('tr');
+  for(const val of [fmtFecha(t.t),t.d,fmtPrecio(t.entry),fmtPrecio(t.exit),t.resultado,usd(t.cambio)]){const td=document.createElement('td');td.textContent=val;tr.appendChild(td)}tb.appendChild(tr);
+ }
+ dibujar(x?x.curve:[b]);
+}
+function dibujar(serie){
+ const el=$('chart');const width=Math.max(el.clientWidth,280),height=185,dpr=Math.min(window.devicePixelRatio||1,2);
+ el.width=Math.round(width*dpr);el.height=Math.round(height*dpr);
+ const ctx=el.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,width,height);
+ let minReal=Infinity,maxReal=-Infinity;for(const val of serie){if(val<minReal)minReal=val;if(val>maxReal)maxReal=val;}
+ let mn=minReal,mx=maxReal;if(mx===mn){mn-=1;mx+=1;}
+ const margin=18,plotW=width-2*margin,plotH=height-2*margin;
+ ctx.strokeStyle='#50647c';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(margin,height-margin);ctx.lineTo(width-margin,height-margin);ctx.stroke();
+ ctx.strokeStyle=serie[serie.length-1]<serie[0]?'#ff8e9c':'#4ad9a0';ctx.lineWidth=2;ctx.beginPath();
+ const stride=Math.max(1,Math.ceil(serie.length/800));const pts=[];
+ for(let i=0;i<serie.length;i+=stride)pts.push([i,serie[i]]);
+ if((serie.length-1)%stride!==0)pts.push([serie.length-1,serie[serie.length-1]]);
+ for(let j=0;j<pts.length;j++){
+  const [idx,value]=pts[j],x=margin+plotW*idx/Math.max(1,serie.length-1),y=margin+plotH*(mx-value)/(mx-mn);
+  if(j===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+ }
+ ctx.stroke();
+ ctx.fillStyle='#b5c4da';ctx.font='12px Arial';ctx.fillText('Máx: '+usd(maxReal),margin+4,13);ctx.fillText('Mín: '+usd(minReal),margin+4,height-3);
+}
+$('archivo').addEventListener('change',async()=>{
+ reiniciar();const file=$('archivo').files[0];if(!file)return;
+ ponerTexto('estadoArchivo','Leyendo '+file.name+'...');$('iniciar').disabled=true;
+ try{
+  if(file.size>35000000)throw Error('Archivo demasiado grande para el navegador.');
+  const resultado=leerCSV(await file.text());datos=resultado.rows;duplicadas=resultado.rep;
+  ind=preparar(datos.map(x=>x.p));
+  const aviso=duplicadas?' Se omitieron '+numero(duplicadas)+' minutos duplicados (conservando la primera fila).':'';
+  ponerTexto('estadoArchivo',numero(datos.length)+' velas leídas desde '+fmtFecha(datos[0].t)+' hasta '+fmtFecha(datos.at(-1).t)+'.'+aviso+' Fuente declarada por el usuario, no verificada.');
+  $('estadoArchivo').className='good';
+  $('iniciar').disabled=false;
+  ponerTexto('estadoBot','Archivo preparado. Toca «Iniciar DEMO automático».');
+ }catch(e){datos=[];ind=null;ponerTexto('estadoArchivo',e.message);$('estadoArchivo').className='bad';ponerTexto('estadoBot','No se ejecutó ninguna operación.');}
+});
+$('iniciar').addEventListener('click',iniciar);
+$('pausar').addEventListener('click',pausa);
+$('reiniciar').addEventListener('click',reiniciar);
+window.addEventListener('resize',()=>dibujar(s?s.curve:[Number($('capital').value)||1000]));
+pintar();
+</script>
+</body>
+</html>
